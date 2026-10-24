@@ -1,0 +1,119 @@
+{
+  "format": "raw little-endian 4-byte integers",
+  "seed": 42,
+  "n": 10000000,
+  "graph_nodes": [
+    1000,
+    10000,
+    100000,
+    1000000
+  ],
+  "avg_degree": 10,
+  "files": {
+    "keys.bin": {
+      "typecode": "i",
+      "count": 10000000,
+      "bytes": 40000000,
+      "sha256": "10d6c768dfc874fb707a89b866e637fb28ad9de8f6c40269d32df817d77d5fcb",
+      "description": "uniform random keys in [0, 2^31)"
+    },
+    "decrease_targets.bin": {
+      "typecode": "I",
+      "count": 10000000,
+      "bytes": 40000000,
+      "sha256": "59bcc0276613a1a03d752083ff072c1b29e73a1de0b6de3ac18def41df6d3b04",
+      "description": "raw uint32; node index = (raw * n) >> 32"
+    },
+    "decrease_amounts.bin": {
+      "typecode": "i",
+      "count": 10000000,
+      "bytes": 40000000,
+      "sha256": "af1a374cabb203d7f6112effe106f260c5d3d008c47309c6475ff61eaf73c1f7",
+      "description": "decrease-key amount in [1, 2^24]"
+    },
+    "graph_1000_src.bin": {
+      "typecode": "i",
+      "count": 10000,
+      "bytes": 40000,
+      "sha256": "a1de4cb1a0d0aaa53d40f2f3c4c70f96d895a08ab206427bb4ac7ba5e12bd252",
+      "description": "graph V=1000, E=10000: edge src"
+    },
+    "graph_1000_dst.bin": {
+      "typecode": "i",
+      "count": 10000,
+      "bytes": 40000,
+      "sha256": "fc56de62f4d5cae0b75156ef77c39d0e517da2f80e669d078f2f562a269fc940",
+      "description": "graph V=1000, E=10000: edge dst"
+    },
+    "graph_1000_weight.bin": {
+      "typecode": "i",
+      "count": 10000,
+      "bytes": 40000,
+      "sha256": "ab7737033f0ddb94a4244947a5ac48b1c20d62f895072b30d0c99447dcd54637",
+      "description": "graph V=1000, E=10000: edge weight"
+    },
+    "graph_10000_src.bin": {
+      "typecode": "i",
+      "count": 100000,
+      "bytes": 400000,
+      "sha256": "2ec9550a5283eda86594cbe65269c3aca4921ec079585d326a66179c0c8fdf82",
+      "description": "graph V=10000, E=100000: edge src"
+    },
+    "graph_10000_dst.bin": {
+      "typecode": "i",
+      "count": 100000,
+      "bytes": 400000,
+      "sha256": "2393f482c27760cb4bfcb516d010ebb221b6f12673fa03d4a551d263b145649f",
+      "description": "graph V=10000, E=100000: edge dst"
+    },
+    "graph_10000_weight.bin": {
+      "typecode": "i",
+      "count": 100000,
+      "bytes": 400000,
+      "sha256": "1df3d341a0a33fbc4658658441a0249baa5174d43ccea0c65fccf291f8f9c809",
+      "description": "graph V=10000, E=100000: edge weight"
+    },
+    "graph_100000_src.bin": {
+      "typecode": "i",
+      "count": 1000000,
+      "bytes": 4000000,
+      "sha256": "d1c79c4ea9f326dbf020b1fa070f882a8d56f65b7b97c45a96f456617a3b0de4",
+      "description": "graph V=100000, E=1000000: edge src"
+    },
+    "graph_100000_dst.bin": {
+      "typecode": "i",
+      "count": 1000000,
+      "bytes": 4000000,
+      "sha256": "69b0224d8c0db295c58d939ec177f3c2530751112f4f6d678bf923ec5f478503",
+      "description": "graph V=100000, E=1000000: edge dst"
+    },
+    "graph_100000_weight.bin": {
+      "typecode": "i",
+      "count": 1000000,
+      "bytes": 4000000,
+      "sha256": "c7b2fcfdebc72bdf40b1630f6741dc3e729075194c54e54afd93840ccde1eea0",
+      "description": "graph V=100000, E=1000000: edge weight"
+    },
+    "graph_1000000_src.bin": {
+      "typecode": "i",
+      "count": 10000000,
+      "bytes": 40000000,
+      "sha256": "1e6da4d36f7327ae87240ea5e77604aada3019e080a25cdb413692f5adf2b7a1",
+      "description": "graph V=1000000, E=10000000: edge src"
+    },
+    "graph_1000000_dst.bin": {
+      "typecode": "i",
+      "count": 10000000,
+      "bytes": 40000000,
+      "sha256": "655f1a2043ff8ec4b1ef124cba2b03e9ca91fe0b0c0abb9ca7c46724fd583f7a",
+      "description": "graph V=1000000, E=10000000: edge dst"
+    },
+    "graph_1000000_weight.bin": {
+      "typecode": "i",
+      "count": 10000000,
+      "bytes": 40000000,
+      "sha256": "72ec83ad4088ca4bfbe960244f6ee32a2feab4d6704449d4d42e527937de4861",
+      "description": "graph V=1000000, E=10000000: edge weight"
+    }
+  }
+}
