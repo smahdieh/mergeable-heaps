@@ -36,8 +36,10 @@ pip install -r requirements.txt
 
 ## Dataset
 
-Download: **TODO: add link after upload** (or regenerate it, see below; the
-same seed always gives byte-identical files, checked by `manifest.json`).
+Download: [mergeable-heaps-dataset.zip](https://ubcca-my.sharepoint.com/:u:/g/personal/mahdieh_sadat_ubc_ca/IQBlhduZTLUxSayS2AOLefOJAQj3RfmTP1xv08hxN26Kbz8?e=qZ7HDQ)
+(UBC OneDrive, 194 MB). Unzip it into `data/`, then run
+`python data/generate_dataset.py --verify`. You can also regenerate it (see
+below): the same seed always gives byte-identical files, checked by `manifest.json`.
 
 ```bash
 # Generate the full dataset (about 20 s, 242 MB, seed 42)
