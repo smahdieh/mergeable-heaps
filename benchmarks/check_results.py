@@ -27,6 +27,9 @@ THEORY = {
     ("heapsort", "insert"): {"binomial": "1", "fibonacci": "1", "pairing": "1"},
     ("heapsort", "extract_min"): {"binomial": "log n", "fibonacci": "log n", "pairing": "log n"},
     ("decrease", "extract_after_decrease"): {"binomial": "log n", "fibonacci": "log n", "pairing": "log n"},
+    # Every item decreased below the minimum: binomial bubbles to the root,
+    # Fibonacci cuts (amortized O(1)), pairing cuts and melds (O(1)).
+    ("decrease_min", "decrease_key_to_min"): {"binomial": "log n", "fibonacci": "1", "pairing": "1"},
 }
 COST = {"1": lambda n: 1.0, "log n": lambda n: math.log2(n)}
 JUMP_LIMIT = 1.6  # flag if normalized cost grows more than 60% from one size to the next

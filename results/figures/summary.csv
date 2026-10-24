@@ -1,7 +1,8 @@
 measure,binomial,fibonacci,pairing
 insert (ns/op),2283,583.5,531.2
 extract_min (ns/op),1.539e+04,1.93e+04,9004
-decrease_key (ns/op),1038,1025,1124
+"decrease_key, random (ns/op)",1038,1025,1124
+decrease_key to new minimum (ns/op),6471,1673,1170
 extract_min after decrease (ns/op),1.542e+04,1.916e+04,1.071e+04
 heapsort total (s),176.7,198.8,95.36
 "Dijkstra, V=10^6, E=10^7 (s)",15.88,20.13,14.58

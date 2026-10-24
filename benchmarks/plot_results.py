@@ -3,7 +3,7 @@
 Reads results/results_*.csv (n = 10^7 rows from results_10M_sequential.csv
 replace the parallel run's, see results/README.md) and writes to
 results/figures/:
-  runtime.pdf         heapsort and decrease-key: total time and per-op cost / theory
+  runtime.pdf         heapsort, worst-case decrease-key and extract_min: time and cost / theory
   dijkstra_memory.pdf Dijkstra time vs graph size, and memory per item
   input_order.pdf     extract_min cost for random, sorted and reverse input
   summary_table.tex   LaTeX table of the n = 10^7 / V = 10^6 results
@@ -193,7 +193,7 @@ def plot_runtime(df: pd.DataFrame, out_dir: Path, tex: bool) -> None:
 
     decrease = df[df["workload"] == "decrease"]
     ax = axes[1, 0]
-    lines(ax, decrease[decrease["phase"] == "decrease_key"], "ns_per_op")
+    lines(ax, df[df["workload"] == "decrease_min"], "ns_per_op")
     ax.set(xlabel="$n$", ylabel="ns per op")
     panel(ax, "c")
     ax.set_ylim(bottom=0)
@@ -293,7 +293,9 @@ def summary(times, ops, memory, out_dir):
     rows = [
         ("insert (ns/op)", lambda h: per_op("heapsort", "insert", h)),
         ("extract\\_min (ns/op)", lambda h: per_op("heapsort", "extract_min", h)),
-        ("decrease\\_key (ns/op)", lambda h: per_op("decrease", "decrease_key", h)),
+        ("decrease\\_key, random (ns/op)", lambda h: per_op("decrease", "decrease_key", h)),
+        ("decrease\\_key to new minimum (ns/op)",
+         lambda h: per_op("decrease_min", "decrease_key_to_min", h)),
         ("extract\\_min after decrease (ns/op)",
          lambda h: per_op("decrease", "extract_after_decrease", h)),
         ("heapsort total (s)", lambda h: (

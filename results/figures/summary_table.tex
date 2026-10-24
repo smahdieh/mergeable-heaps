@@ -5,7 +5,8 @@ Measure ($n = 10^7$ unless stated) & Binomial & Fibonacci & Pairing \\
 \midrule
 insert (ns/op) & 2,283 & 583 & \textbf{531} \\
 extract\_min (ns/op) & 15,390 & 19,298 & \textbf{9,004} \\
-decrease\_key (ns/op) & 1,038 & \textbf{1,025} & 1,124 \\
+decrease\_key, random (ns/op) & 1,038 & \textbf{1,025} & 1,124 \\
+decrease\_key to new minimum (ns/op) & 6,471 & 1,673 & \textbf{1,170} \\
 extract\_min after decrease (ns/op) & 15,424 & 19,157 & \textbf{10,712} \\
 heapsort total (s) & 176.7 & 198.8 & \textbf{95.4} \\
 Dijkstra, V=$10^6$, E=$10^7$ (s) & 15.9 & 20.1 & \textbf{14.6} \\

@@ -131,6 +131,7 @@ done
 |---|---|---|
 | `heapsort` | n inserts of random keys, then n extract_mins (two phases) | n = 10^3 to 10^7 |
 | `decrease` | n random decrease_keys on a heap of n items, then draining it | n = 10^3 to 10^7 |
+| `decrease_min` | worst case: every item decreased once, in random order, to below the minimum | n = 10^3 to 10^7 |
 | `sorted`, `reverse` | heapsort on ascending / descending keys | n = 10^3 to 10^6 |
 | `memory` | bytes per item of the heap structure (`tracemalloc`) | n = 10^3 to 10^6 |
 | `dijkstra` | shortest paths from node 0 (decrease-key version) | V = 10^3 to 10^6, E = 10 V |
@@ -146,8 +147,12 @@ Python version and machine.
 ## Checking and plotting the results
 
 ```bash
-# Completeness, Dijkstra agreement across heaps, and scaling vs theory
+# Completeness, Dijkstra agreement across heaps, and scaling vs theory.
+# One flag is expected: binomial decrease_min at n = 10^7 (memory effect, see results/README.md)
 python benchmarks/check_results.py
+
+# Illustration of the three heaps (Figure 1 of the report)
+python benchmarks/draw_structures.py
 
 # Figures + summary table into results/figures/ (add --copy-to ../report/figures for the report)
 python benchmarks/plot_results.py
@@ -155,7 +160,8 @@ python benchmarks/plot_results.py
 
 | Output | Shows |
 |---|---|
-| `runtime.pdf` | (a) heapsort time vs n with an n log n guide, (b) extract_min cost / log n, (c) decrease_key cost, (d) extract_min after decrease_keys / log n |
+| `structures.pdf` | example binomial, Fibonacci and pairing heaps (from `draw_structures.py`) |
+| `runtime.pdf` | (a) heapsort time vs n with an n log n guide, (b) extract_min cost / log n, (c) worst-case decrease_key cost, (d) extract_min after decrease_keys / log n |
 | `dijkstra_memory.pdf` | Dijkstra time vs graph size with a V log V guide, and memory per item |
 | `input_order.pdf` | extract_min cost for random, ascending and descending keys (n = 10^6) |
 | `summary_table.tex`, `summary.csv` | per-operation times at n = 10^7, Dijkstra at V = 10^6, memory |
@@ -171,7 +177,7 @@ Main options of `run_benchmarks.py`:
 | Option | Default | Meaning |
 |---|---|---|
 | `--heaps` | all three | `binomial`, `fibonacci`, `pairing` |
-| `--workloads` | all | any of `heapsort decrease sorted reverse memory dijkstra` |
+| `--workloads` | all | any of `heapsort decrease decrease_min sorted reverse memory dijkstra` |
 | `--sizes` | 10^3, 3·10^3, ..., 10^7 | values of n |
 | `--graph-sizes` | 10^3 ... 10^6 | Dijkstra graph sizes V |
 | `--repeats` / `--large-repeats` | 3 / 1 | repeats for n <= 10^6 / n > 10^6 |
@@ -185,7 +191,8 @@ At n = 10^7 (single-process run; see `results/figures/summary.csv`):
 |---|---|---|---|
 | insert (ns/op) | 2,283 | 583 | **531** |
 | extract_min (ns/op) | 15,390 | 19,298 | **9,004** |
-| decrease_key (ns/op) | 1,038 | **1,025** | 1,124 |
+| decrease_key, random (ns/op) | 1,038 | **1,025** | 1,124 |
+| decrease_key to new minimum (ns/op) | 6,471 | 1,673 | **1,170** |
 | heapsort total (s) | 176.7 | 198.8 | **95.4** |
 | Dijkstra, V = 10^6, E = 10^7 (s) | 15.9 | 20.1 | **14.6** |
 | memory (bytes/item, n = 10^6) | 128 | 96 | **72** |

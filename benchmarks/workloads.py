@@ -86,6 +86,39 @@ def decrease_key(
             ("extract_after_decrease", n - 1, t_extract.seconds)]
 
 
+def decrease_to_min(heap_cls: Type[MergeableHeap], keys: Sequence[int],
+                    targets: Sequence[int]) -> list:
+    """Worst-case decrease_key: every item becomes the new minimum, once.
+
+    Builds a heap, runs one extract_min (untimed) so real trees exist, then
+    decreases every remaining item exactly once, in a random order given by
+    the dataset's target stream, to a key below the current minimum. This
+    forces the expensive path of each heap: the binomial heap must move the
+    key up to its root (O(log n)), the Fibonacci heap must cut the node
+    (O(1) amortized) and the pairing heap must cut and meld it.
+
+    Input: heap class, n keys, n raw targets (only their order is used).
+    Output: [("decrease_key_to_min", ops, s)].
+    """
+    n = len(keys)
+    heap = heap_cls()
+    handles = [heap.insert(key, i) for i, key in enumerate(keys)]
+    gone = heap.extract_min().value
+    new_key = heap.find_min().key
+    # Random permutation of the items, decided by the dataset (not timed).
+    order = sorted(range(n), key=targets.__getitem__)
+
+    decrease = heap.decrease_key
+    ops = 0
+    with _Timer() as t:
+        for index in order:
+            if index != gone:
+                new_key -= 1
+                decrease(handles[index], new_key)
+                ops += 1
+    return [("decrease_key_to_min", ops, t.seconds)]
+
+
 def shortest_paths(heap_cls: Type[MergeableHeap], graph: tuple) -> tuple:
     """Run Dijkstra from node 0.
 

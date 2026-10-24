@@ -3,6 +3,7 @@
 Workloads (see benchmarks/workloads.py):
   heapsort   insert n random keys, then extract_min n times
   decrease   n random decrease_keys on a heap of n items, then drain it
+  decrease_min  every item decreased once to below the minimum (worst case)
   sorted     heapsort on keys 0..n-1 (ascending insert order)
   reverse    heapsort on keys n-1..0 (descending insert order)
   memory     bytes per item of the heap structure
@@ -32,7 +33,7 @@ from mergeable_heaps.dijkstra import build_csr  # noqa: E402
 import workloads  # noqa: E402
 
 HEAPS = {"binomial": BinomialHeap, "fibonacci": FibonacciHeap, "pairing": PairingHeap}
-WORKLOADS = ["heapsort", "decrease", "sorted", "reverse", "memory", "dijkstra"]
+WORKLOADS = ["heapsort", "decrease", "decrease_min", "sorted", "reverse", "memory", "dijkstra"]
 DEFAULT_SIZES = [1_000, 3_000, 10_000, 30_000, 100_000, 300_000,
                  1_000_000, 3_000_000, 10_000_000]
 FIELDS = ["heap", "workload", "phase", "n", "repeat", "ops", "seconds", "bytes_per_item", "check"]
@@ -124,6 +125,10 @@ def run_key_workloads(args, heaps, out: ResultWriter, start: float) -> None:
                     phases = workloads.decrease_key(heap_cls, keys, all_targets[:n], all_amounts[:n])
                     for phase, ops, sec in phases:
                         out.write(heap=name, workload="decrease", phase=phase, n=n,
+                                  repeat=rep, ops=ops, seconds=f"{sec:.6f}")
+                if "decrease_min" in args.workloads:
+                    for phase, ops, sec in workloads.decrease_to_min(heap_cls, keys, all_targets[:n]):
+                        out.write(heap=name, workload="decrease_min", phase=phase, n=n,
                                   repeat=rep, ops=ops, seconds=f"{sec:.6f}")
                 for order in ("sorted", "reverse"):
                     if order in args.workloads and n <= args.adversarial_max:

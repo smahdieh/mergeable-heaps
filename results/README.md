@@ -40,5 +40,21 @@ Run 2 repeated n = 10^7 with one process at a time. Seconds per phase:
 | pairing | extract_after_decrease | 337.7 | 107.1 | 3.15 |
 
 With run 2, every 10^7 point is back on the trend of the smaller sizes and
-all checks in `check_results.py` pass. Sizes up to 3·10^6 fit in memory with
+all checks in `check_results.py` for these workloads pass. Sizes up to 3·10^6 fit in memory with
 all three processes running, so they did not need to be repeated.
+
+## Worst-case decrease_key (`results_decrease_min.csv`)
+
+Run separately, one heap at a time (`--workloads decrease_min`): every item is
+decreased once, in random order, to below the current minimum. The binomial
+heap must move each key to its root, so its cost grows with log n, while the
+Fibonacci and pairing heaps only cut the node.
+
+`check_results.py` flags one point here: the binomial heap at n = 10^7 costs
+6.5 us per call against 3.4 us at 3*10^6, more than log n alone predicts. This
+is not swapping. The run was repeated (5,968 vs 6,974 ns per call; both rows
+are kept and the median is used) and had only 326 page faults. The binomial
+heap touches two objects on each of about log n levels per call, so it is hit
+hardest when the 3 GB heap no longer fits in fast memory; the Fibonacci and
+pairing heaps touch a constant number of nodes and are not affected.
+
