@@ -70,11 +70,10 @@ class BinomialHeap(MergeableHeap):
         Input: two roots of equal degree, parent.entry.key <= child.entry.key.
         Output: None; parent becomes the root of a tree of degree k + 1. O(1).
         """
-        # TODO: child.parent = parent
-        # TODO: child.sibling = parent.child   (push onto the front of the child list)
-        # TODO: parent.child = child
-        # TODO: parent.degree += 1
-        raise NotImplementedError
+        child.parent = parent
+        child.sibling = parent.child
+        parent.child = child
+        parent.degree += 1
 
     @staticmethod
     def _merge_root_lists(a: Optional[_TreeNode], b: Optional[_TreeNode]) -> Optional[_TreeNode]:
@@ -83,10 +82,23 @@ class BinomialHeap(MergeableHeap):
         Input: heads of two root lists, each sorted by increasing degree.
         Output: head of the merged list (may contain two trees of the same degree).
         """
-        # TODO: walk both lists with two pointers, always taking the root with
-        #       the smaller degree, and link them through `sibling`.
-        # TODO: append whatever is left of the longer list.
-        raise NotImplementedError
+        if a is None:
+            return b
+        if b is None:
+            return a
+        if a.degree <= b.degree:
+            head, a = a, a.sibling
+        else:
+            head, b = b, b.sibling
+        tail = head
+        while a is not None and b is not None:
+            if a.degree <= b.degree:
+                tail.sibling, a = a, a.sibling
+            else:
+                tail.sibling, b = b, b.sibling
+            tail = tail.sibling
+        tail.sibling = a if a is not None else b
+        return head
 
     def _union_roots(self, other_head: Optional[_TreeNode]) -> None:
         """Combine another root list into this heap (CLRS BINOMIAL-HEAP-UNION).
@@ -94,51 +106,105 @@ class BinomialHeap(MergeableHeap):
         Input: head of a root list. Output: None; self._head is the new list,
         with at most one tree per degree. Works like binary addition with carries.
         """
-        # TODO: head = _merge_root_lists(self._head, other_head); if None, set and return.
-        # TODO: walk with prev, x = head, nxt = x.sibling:
-        #   case 1/2: x.degree != nxt.degree, or three roots in a row have the same
-        #             degree (nxt.sibling.degree == x.degree) -> just move forward.
-        #   case 3:   x.key <= nxt.key -> x.sibling = nxt.sibling; _link(nxt, x).
-        #   case 4:   otherwise -> remove x from the list (fix prev or head);
-        #             _link(x, nxt); x = nxt.
-        #   then nxt = x.sibling.
-        # TODO: self._head = head, then recompute self._min (call _update_min).
-        raise NotImplementedError
+        head = self._merge_root_lists(self._head, other_head)
+        self._head = head
+        if head is None:
+            self._min = None
+            return
+
+        prev = None
+        x = head
+        nxt = x.sibling
+        while nxt is not None:
+            if x.degree != nxt.degree or (
+                nxt.sibling is not None and nxt.sibling.degree == x.degree
+            ):
+                # Cases 1 and 2: nothing to link here yet, move forward.
+                prev, x = x, nxt
+            elif x.entry.key <= nxt.entry.key:
+                # Case 3: x stays a root, nxt becomes its child.
+                x.sibling = nxt.sibling
+                self._link(nxt, x)
+            else:
+                # Case 4: nxt stays a root, x becomes its child.
+                if prev is None:
+                    head = nxt
+                else:
+                    prev.sibling = nxt
+                self._link(x, nxt)
+                x = nxt
+            nxt = x.sibling
+
+        self._head = head
+        self._update_min()
 
     def _update_min(self) -> None:
         """Scan the root list and point self._min at the smallest key.
 
         Input: none. Output: None. O(log n) since there are <= log2 n + 1 roots.
         """
-        # TODO: walk self._head through `sibling`, keep the root with the smallest entry.key.
-        raise NotImplementedError
+        best = self._head
+        x = best.sibling if best is not None else None
+        while x is not None:
+            if x.entry.key < best.entry.key:
+                best = x
+            x = x.sibling
+        self._min = best
 
     def insert(self, key: Any, value: Any = None) -> BinomialEntry:
         """Add an item as a new B_0 tree and union it in.
 
         Input: key and optional value. Output: the entry handle. O(log n) worst case.
         """
-        # TODO: entry = BinomialEntry(key, value); tree = _TreeNode(entry); entry.tree = tree
-        # TODO: self._union_roots(tree); self._size += 1; return entry
-        raise NotImplementedError
+        entry = BinomialEntry(key, value)
+        tree = _TreeNode(entry)
+        entry.tree = tree
+        self._union_roots(tree)
+        self._size += 1
+        return entry
 
     def find_min(self) -> BinomialEntry:
         """Input: none. Output: entry with the minimum key. O(1)."""
-        # TODO: raise EmptyHeapError if empty; else return self._min.entry
-        raise NotImplementedError
+        if self._min is None:
+            raise EmptyHeapError("find_min on an empty heap")
+        return self._min.entry
 
     def extract_min(self) -> BinomialEntry:
         """Remove and return the minimum entry.
 
         Input: none. Output: entry with the minimum key. O(log n).
         """
-        # TODO: raise EmptyHeapError if empty.
-        # TODO: remove self._min from the root list (need its previous root).
-        # TODO: reverse its child list (children are in decreasing degree),
-        #       set each child's parent to None -> this is a valid root list.
-        # TODO: self._union_roots(reversed_children); self._size -= 1
-        # TODO: clear the entry's tree pointer and return the entry.
-        raise NotImplementedError
+        min_root = self._min
+        if min_root is None:
+            raise EmptyHeapError("extract_min on an empty heap")
+
+        # Unlink min_root from the root list.
+        prev = None
+        x = self._head
+        while x is not min_root:
+            prev, x = x, x.sibling
+        if prev is None:
+            self._head = min_root.sibling
+        else:
+            prev.sibling = min_root.sibling
+
+        # Its children are in decreasing degree; reversed they form a valid root list.
+        reversed_children = None
+        child = min_root.child
+        while child is not None:
+            nxt = child.sibling
+            child.sibling = reversed_children
+            child.parent = None
+            reversed_children = child
+            child = nxt
+
+        self._union_roots(reversed_children)
+        self._size -= 1
+
+        entry = min_root.entry
+        entry.tree = None
+        min_root.child = min_root.sibling = None
+        return entry
 
     def decrease_key(self, node: BinomialEntry, new_key: Any) -> None:
         """Lower an entry's key and bubble it up toward the root.
@@ -146,20 +212,30 @@ class BinomialHeap(MergeableHeap):
         Input: entry handle from insert(), new_key <= current key.
         Output: None. O(log n) because a tree has height <= log2 n.
         """
-        # TODO: self._check_decrease(node, new_key); node.key = new_key
-        # TODO: y = node.tree; z = y.parent
-        # TODO: while z and y.entry.key < z.entry.key:
-        #           swap y.entry and z.entry, then fix both entries' .tree back pointers
-        #           y = z; z = y.parent
-        # TODO: if y is a root and its key < self._min key, update self._min.
-        raise NotImplementedError
+        self._check_decrease(node, new_key)
+        node.key = new_key
+        y = node.tree
+        z = y.parent
+        while z is not None and y.entry.key < z.entry.key:
+            # Swap the entries (not the tree nodes), then fix the back pointers.
+            y_entry, z_entry = y.entry, z.entry
+            y.entry, z.entry = z_entry, y_entry
+            z_entry.tree = y
+            y_entry.tree = z
+            y = z
+            z = y.parent
+        if z is None and y.entry.key < self._min.entry.key:
+            self._min = y
 
     def merge(self, other: "BinomialHeap") -> None:
         """Move all items of `other` into this heap.
 
         Input: another BinomialHeap. Output: None; `other` is emptied. O(log n).
         """
-        # TODO: self._check_same_type(other)
-        # TODO: self._union_roots(other._head); self._size += other._size
-        # TODO: reset other to empty (_head, _min = None, _size = 0)
-        raise NotImplementedError
+        self._check_same_type(other)
+        if other is self:
+            return
+        self._union_roots(other._head)
+        self._size += other._size
+        other._head = other._min = None
+        other._size = 0

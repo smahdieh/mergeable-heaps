@@ -52,13 +52,16 @@ class FibonacciHeap(MergeableHeap):
 
     @staticmethod
     def _splice(a: FibonacciNode, b: FibonacciNode) -> None:
-        """Join two circular lists into one.
+        """Join two circular lists into one: a -> b ... b.left -> a.right ... -> a.
 
         Input: a node from each list. Output: None. O(1).
         """
-        # TODO: connect a <-> b.right ... and b <-> a.right so the two circles
-        #       become one (4 pointer updates; save a.right first).
-        raise NotImplementedError
+        a_right = a.right
+        b_left = b.left
+        a.right = b
+        b.left = a
+        b_left.right = a_right
+        a_right.left = b_left
 
     @staticmethod
     def _remove_from_list(x: FibonacciNode) -> None:
@@ -66,39 +69,63 @@ class FibonacciHeap(MergeableHeap):
 
         Input: a node. Output: None. O(1).
         """
-        # TODO: x.left.right = x.right; x.right.left = x.left
-        # TODO: x.left = x.right = x
-        raise NotImplementedError
+        x.left.right = x.right
+        x.right.left = x.left
+        x.left = x.right = x
 
     def insert(self, key: Any, value: Any = None) -> FibonacciNode:
         """Add a new one-node tree to the root list (no consolidation).
 
         Input: key and optional value. Output: the node handle. O(1).
         """
-        # TODO: node = FibonacciNode(key, value)
-        # TODO: if heap empty: self._min = node; else splice node into the root
-        #       list and update self._min if node.key < self._min.key
-        # TODO: self._size += 1; return node
-        raise NotImplementedError
+        node = FibonacciNode(key, value)
+        if self._min is None:
+            self._min = node
+        else:
+            self._splice(self._min, node)
+            if node.key < self._min.key:
+                self._min = node
+        self._size += 1
+        return node
 
     def find_min(self) -> FibonacciNode:
         """Input: none. Output: node with the minimum key. O(1)."""
-        # TODO: raise EmptyHeapError if empty; else return self._min
-        raise NotImplementedError
+        if self._min is None:
+            raise EmptyHeapError("find_min on an empty heap")
+        return self._min
 
     def extract_min(self) -> FibonacciNode:
         """Remove and return the minimum node, then consolidate the roots.
 
         Input: none. Output: node with the minimum key. O(log n) amortized.
         """
-        # TODO: raise EmptyHeapError if empty; z = self._min
-        # TODO: for each child of z: set child.parent = None (the mark can be
-        #       cleared too); then splice z's whole child list into the root list.
-        # TODO: if z.right is z (z is now the only root): self._min = None
-        #       else: self._min = z.right; remove z from the root list;
-        #             self._consolidate()
-        # TODO: self._size -= 1; detach z (child = None, degree = 0); return z
-        raise NotImplementedError
+        z = self._min
+        if z is None:
+            raise EmptyHeapError("extract_min on an empty heap")
+
+        # Promote all children of z to the root list.
+        first_child = z.child
+        if first_child is not None:
+            x = first_child
+            while True:
+                x.parent = None
+                x.mark = False
+                x = x.right
+                if x is first_child:
+                    break
+            self._splice(z, first_child)
+            z.child = None
+
+        if z.right is z:  # z was the only root and had no children
+            self._min = None
+        else:
+            self._min = z.right
+            self._remove_from_list(z)
+            self._consolidate()
+
+        self._size -= 1
+        z.degree = 0
+        return z
 
     def _consolidate(self) -> None:
         """Link roots of equal degree until all root degrees are distinct.
@@ -106,31 +133,50 @@ class FibonacciHeap(MergeableHeap):
         Input: none. Output: None; also recomputes self._min.
         O(D(n) + number of roots) actual time.
         """
-        # TODO: degree table A of size floor(log_phi(n)) + 2, all None
-        #       (int(math.log(self._size) / _LOG_PHI) + 2 when size > 1).
-        # TODO: collect the current roots into a Python list FIRST (the root list
-        #       changes while linking, so do not walk it while modifying it).
-        # TODO: for each root x:
-        #           d = x.degree
-        #           while A[d] is not None:
-        #               y = A[d]
-        #               if y.key < x.key: swap x and y
-        #               self._link(y, x)    # y becomes a child of x
-        #               A[d] = None; d += 1
-        #           A[d] = x
-        # TODO: rebuild the root list from the non-None entries of A and set
-        #       self._min to the smallest one.
-        raise NotImplementedError
+        # Size is still counting the extracted node here, so this is an upper bound.
+        max_degree = int(math.log(self._size) / _LOG_PHI) + 2 if self._size > 1 else 2
+        by_degree: list = [None] * (max_degree + 1)
+
+        # Copy the roots first: linking changes the root list while we iterate.
+        roots = []
+        start = x = self._min
+        while True:
+            roots.append(x)
+            x = x.right
+            if x is start:
+                break
+
+        for x in roots:
+            d = x.degree
+            while by_degree[d] is not None:
+                y = by_degree[d]
+                if y.key < x.key:
+                    x, y = y, x
+                self._link(y, x)
+                by_degree[d] = None
+                d += 1
+            by_degree[d] = x
+
+        # The losers were removed by _link, so the root list is exactly the
+        # trees left in by_degree; only the min pointer needs recomputing.
+        self._min = None
+        for x in by_degree:
+            if x is not None and (self._min is None or x.key < self._min.key):
+                self._min = x
 
     def _link(self, y: FibonacciNode, x: FibonacciNode) -> None:
         """Make root y a child of root x (CLRS FIB-HEAP-LINK).
 
         Input: two roots with x.key <= y.key. Output: None. O(1).
         """
-        # TODO: remove y from the root list
-        # TODO: add y to x's child list (or make it x.child if x has none)
-        # TODO: y.parent = x; x.degree += 1; y.mark = False
-        raise NotImplementedError
+        self._remove_from_list(y)
+        if x.child is None:
+            x.child = y
+        else:
+            self._splice(x.child, y)
+        y.parent = x
+        x.degree += 1
+        y.mark = False
 
     def decrease_key(self, node: FibonacciNode, new_key: Any) -> None:
         """Lower a node's key; cut it out if it breaks heap order.
@@ -138,42 +184,60 @@ class FibonacciHeap(MergeableHeap):
         Input: node handle from insert(), new_key <= current key.
         Output: None. O(1) amortized.
         """
-        # TODO: self._check_decrease(node, new_key); node.key = new_key
-        # TODO: y = node.parent
-        # TODO: if y and node.key < y.key: self._cut(node, y); self._cascading_cut(y)
-        # TODO: if node.key < self._min.key: self._min = node
-        raise NotImplementedError
+        self._check_decrease(node, new_key)
+        node.key = new_key
+        parent = node.parent
+        if parent is not None and node.key < parent.key:
+            self._cut(node, parent)
+            self._cascading_cut(parent)
+        if node.key < self._min.key:
+            self._min = node
 
     def _cut(self, x: FibonacciNode, y: FibonacciNode) -> None:
         """Move child x of y to the root list.
 
         Input: x and its parent y. Output: None. O(1).
         """
-        # TODO: if y.child is x: y.child = x.right if x.right is not x else None
-        # TODO: remove x from y's child list; y.degree -= 1
-        # TODO: splice x into the root list; x.parent = None; x.mark = False
-        raise NotImplementedError
+        if x.right is x:  # x was the only child
+            y.child = None
+        elif y.child is x:
+            y.child = x.right
+        self._remove_from_list(x)
+        y.degree -= 1
+        self._splice(self._min, x)
+        x.parent = None
+        x.mark = False
 
     def _cascading_cut(self, y: FibonacciNode) -> None:
         """Walk up from y: cut marked ancestors, mark the first unmarked one.
 
         Input: a node that just lost a child. Output: None.
         O(1) amortized (each cut pays for itself with the potential of its mark).
+        Written as a loop instead of CLRS's recursion to avoid the recursion limit.
         """
-        # TODO: write it as a loop, not recursion (deep trees + Python recursion limit):
-        #   z = y.parent
-        #   while z is not None:
-        #       if not y.mark: y.mark = True; break
-        #       self._cut(y, z); y = z; z = y.parent
-        raise NotImplementedError
+        z = y.parent
+        while z is not None:
+            if not y.mark:
+                y.mark = True
+                return
+            self._cut(y, z)
+            y = z
+            z = y.parent
 
     def merge(self, other: "FibonacciHeap") -> None:
         """Move all items of `other` into this heap by splicing root lists.
 
         Input: another FibonacciHeap. Output: None; `other` is emptied. O(1).
         """
-        # TODO: self._check_same_type(other); if other is empty: return
-        # TODO: if self is empty: take other's _min; else splice the two root
-        #       lists and keep the smaller min
-        # TODO: self._size += other._size; reset other (_min = None, _size = 0)
-        raise NotImplementedError
+        self._check_same_type(other)
+        if other is self or other._min is None:
+            return
+        if self._min is None:
+            self._min = other._min
+        else:
+            self._splice(self._min, other._min)
+            if other._min.key < self._min.key:
+                self._min = other._min
+        self._size += other._size
+        other._min = None
+        other._size = 0

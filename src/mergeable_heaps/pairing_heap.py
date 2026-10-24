@@ -48,37 +48,50 @@ class PairingHeap(MergeableHeap):
         Input: two tree roots (either may be None; both have no sibling/prev).
         Output: the root of the combined tree. O(1).
         """
-        # TODO: if a is None return b; if b is None return a
-        # TODO: if b.key < a.key: swap a and b   (a is now the winner)
-        # TODO: make b the leftmost child of a:
-        #       b.sibling = a.child; if a.child: a.child.prev = b
-        #       b.prev = a; a.child = b
-        # TODO: return a
-        raise NotImplementedError
+        if a is None:
+            return b
+        if b is None:
+            return a
+        if b.key < a.key:
+            a, b = b, a
+        # b becomes the leftmost child of a.
+        b.sibling = a.child
+        if a.child is not None:
+            a.child.prev = b
+        b.prev = a
+        a.child = b
+        return a
 
     def insert(self, key: Any, value: Any = None) -> PairingNode:
         """Add an item as a one-node tree and meld it with the root.
 
         Input: key and optional value. Output: the node handle. O(1).
         """
-        # TODO: node = PairingNode(key, value); self._root = self._meld(self._root, node)
-        # TODO: self._size += 1; return node
-        raise NotImplementedError
+        node = PairingNode(key, value)
+        self._root = self._meld(self._root, node)
+        self._size += 1
+        return node
 
     def find_min(self) -> PairingNode:
         """Input: none. Output: node with the minimum key (the root). O(1)."""
-        # TODO: raise EmptyHeapError if empty; else return self._root
-        raise NotImplementedError
+        if self._root is None:
+            raise EmptyHeapError("find_min on an empty heap")
+        return self._root
 
     def extract_min(self) -> PairingNode:
         """Remove the root and rebuild one tree from its children by two-pass pairing.
 
         Input: none. Output: node with the minimum key. O(log n) amortized.
         """
-        # TODO: raise EmptyHeapError if empty; old = self._root
-        # TODO: self._root = self._two_pass(old.child); if root: root.prev = None
-        # TODO: self._size -= 1; detach old (child = None); return old
-        raise NotImplementedError
+        old = self._root
+        if old is None:
+            raise EmptyHeapError("extract_min on an empty heap")
+        self._root = self._two_pass(old.child)
+        if self._root is not None:
+            self._root.prev = None
+        self._size -= 1
+        old.child = None
+        return old
 
     def _two_pass(self, first: Optional[PairingNode]) -> Optional[PairingNode]:
         """Combine a sibling list into one tree.
@@ -86,15 +99,29 @@ class PairingHeap(MergeableHeap):
         Input: the leftmost node of a sibling list. Output: root of the result.
         Pass 1 (left to right): meld siblings in pairs (1st+2nd, 3rd+4th, ...).
         Pass 2 (right to left): meld each pair result into the accumulated tree.
+        Both passes are loops, so long sibling lists cannot hit the recursion limit.
         """
-        # TODO: pass 1 with a loop, collecting pair results in a Python list:
-        #       a = first; b = a.sibling; next = b.sibling (if b)
-        #       detach a and b (sibling = prev = None) BEFORE melding them
-        #       pairs.append(self._meld(a, b)); continue from next
-        # TODO: pass 2: result = pairs[-1]; for p in reversed(pairs[:-1]):
-        #       result = self._meld(p, result)
-        # TODO: return result (None if first is None)
-        raise NotImplementedError
+        if first is None:
+            return None
+        pairs = []
+        a = first
+        while a is not None:
+            b = a.sibling
+            if b is None:  # odd one out
+                a.sibling = a.prev = None
+                pairs.append(a)
+                break
+            next_pair = b.sibling
+            # Detach both before melding so no stale sibling links survive.
+            a.sibling = a.prev = None
+            b.sibling = b.prev = None
+            pairs.append(self._meld(a, b))
+            a = next_pair
+
+        result = pairs[-1]
+        for i in range(len(pairs) - 2, -1, -1):
+            result = self._meld(pairs[i], result)
+        return result
 
     def decrease_key(self, node: PairingNode, new_key: Any) -> None:
         """Lower a node's key; if it is not the root, cut its subtree and meld it back.
@@ -102,22 +129,29 @@ class PairingHeap(MergeableHeap):
         Input: node handle from insert(), new_key <= current key.
         Output: None. o(log n) amortized.
         """
-        # TODO: self._check_decrease(node, new_key); node.key = new_key
-        # TODO: if node is self._root: return
-        # TODO: cut node (with its subtree) out of its sibling list:
-        #       if node.prev.child is node: node.prev.child = node.sibling   (leftmost child)
-        #       else: node.prev.sibling = node.sibling
-        #       if node.sibling: node.sibling.prev = node.prev
-        #       node.sibling = node.prev = None
-        # TODO: self._root = self._meld(self._root, node)
-        raise NotImplementedError
+        self._check_decrease(node, new_key)
+        node.key = new_key
+        if node is self._root:
+            return
+        # Cut node (with its subtree) out of its sibling list.
+        if node.prev.child is node:  # leftmost child: prev is the parent
+            node.prev.child = node.sibling
+        else:
+            node.prev.sibling = node.sibling
+        if node.sibling is not None:
+            node.sibling.prev = node.prev
+        node.sibling = node.prev = None
+        self._root = self._meld(self._root, node)
 
     def merge(self, other: "PairingHeap") -> None:
         """Move all items of `other` into this heap by melding the two roots.
 
         Input: another PairingHeap. Output: None; `other` is emptied. O(1).
         """
-        # TODO: self._check_same_type(other)
-        # TODO: self._root = self._meld(self._root, other._root); self._size += other._size
-        # TODO: reset other (_root = None, _size = 0)
-        raise NotImplementedError
+        self._check_same_type(other)
+        if other is self:
+            return
+        self._root = self._meld(self._root, other._root)
+        self._size += other._size
+        other._root = None
+        other._size = 0
