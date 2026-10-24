@@ -33,7 +33,7 @@ mergeable-heaps/
 │   ├── check_results.py     # validates the CSVs (completeness, agreement, scaling)
 │   └── plot_results.py      # figures and summary table for the report
 ├── results/                 # benchmark CSVs, logs, figures (see results/README.md)
-├── tests/                   # 177 unit tests (pytest)
+├── tests/                   # 186 unit tests (pytest)
 └── demo.py                  # short demo of all three heaps (a few seconds)
 ```
 
@@ -53,7 +53,7 @@ pip install -r requirements.txt
 ## Quick start
 
 ```bash
-pytest            # 177 unit tests, about 2 s
+pytest            # 186 unit tests, about 2 s
 python demo.py    # basic operations, Dijkstra and a timing comparison, about 3 s
 ```
 

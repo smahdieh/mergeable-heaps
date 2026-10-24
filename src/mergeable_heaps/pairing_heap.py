@@ -128,7 +128,11 @@ class PairingHeap(MergeableHeap):
 
         Input: node handle from insert(), new_key <= current key.
         Output: None. o(log n) amortized.
+        Raises ValueError if the node was already extracted (a node in the heap
+        is either the root or has a prev link).
         """
+        if node.prev is None and node is not self._root:
+            raise self._not_in_heap(node)
         self._check_decrease(node, new_key)
         node.key = new_key
         if node is self._root:

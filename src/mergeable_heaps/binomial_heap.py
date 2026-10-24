@@ -211,7 +211,10 @@ class BinomialHeap(MergeableHeap):
 
         Input: entry handle from insert(), new_key <= current key.
         Output: None. O(log n) because a tree has height <= log2 n.
+        Raises ValueError if the entry was already extracted (its tree is None).
         """
+        if node.tree is None:
+            raise self._not_in_heap(node)
         self._check_decrease(node, new_key)
         node.key = new_key
         y = node.tree

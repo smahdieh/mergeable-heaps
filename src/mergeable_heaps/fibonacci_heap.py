@@ -21,8 +21,9 @@ class FibonacciNode(HeapNode):
     """Handle returned by insert(); also the tree node itself.
 
     left/right link the node into a circular doubly linked list (root list or
-    a sibling list). `mark` is True if the node lost a child since it last
-    became a child of another node.
+    a sibling list); both are set to None when the node is extracted, which is
+    how decrease_key recognises a node that is no longer in the heap. `mark` is
+    True if the node lost a child since it last became a child of another node.
     """
 
     __slots__ = ("parent", "child", "left", "right", "degree", "mark")
@@ -125,6 +126,7 @@ class FibonacciHeap(MergeableHeap):
 
         self._size -= 1
         z.degree = 0
+        z.left = z.right = None  # a node in the heap always has list links
         return z
 
     def _consolidate(self) -> None:
@@ -183,7 +185,10 @@ class FibonacciHeap(MergeableHeap):
 
         Input: node handle from insert(), new_key <= current key.
         Output: None. O(1) amortized.
+        Raises ValueError if the node was already extracted.
         """
+        if node.left is None:
+            raise self._not_in_heap(node)
         self._check_decrease(node, new_key)
         node.key = new_key
         parent = node.parent

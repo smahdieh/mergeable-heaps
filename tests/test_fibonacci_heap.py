@@ -111,7 +111,8 @@ def test_degree_bound_holds_under_decrease_keys():
 def test_cut_and_cascading_cut():
     """Build one tree, then check that decrease_key cuts nodes and marks parents."""
     heap = FibonacciHeap()
-    nodes = [heap.insert(key) for key in range(17)]
+    for key in range(17):
+        heap.insert(key)
     heap.extract_min()  # 16 nodes -> a single tree of degree 4 rooted at key 1
     root = heap._min
     assert root.key == 1 and root.degree == 4

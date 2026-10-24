@@ -169,6 +169,40 @@ def test_decrease_key_rejects_larger_key(heap_cls):
     assert node.key == 5  # unchanged
 
 
+def test_decrease_key_on_extracted_node_raises(heap_cls):
+    heap = heap_cls()
+    nodes = [heap.insert(key) for key in range(20)]
+    gone = heap.extract_min()
+    assert gone is nodes[0]
+    with pytest.raises(ValueError, match="not in the heap"):
+        heap.decrease_key(gone, -1)
+    # The failed call must leave the heap untouched.
+    assert len(heap) == 19
+    assert drain(heap) == list(range(1, 20))
+
+
+def test_decrease_key_on_last_extracted_node_raises(heap_cls):
+    # Extracting the only item leaves an empty heap; its handle is now invalid.
+    heap = heap_cls()
+    node = heap.insert(5)
+    heap.extract_min()
+    with pytest.raises(ValueError):
+        heap.decrease_key(node, 1)
+    assert heap.is_empty()
+
+
+def test_decrease_key_on_extracted_node_after_many_operations(heap_cls):
+    heap = heap_cls()
+    nodes = [heap.insert(key) for key in range(200)]
+    extracted = [heap.extract_min() for _ in range(50)]
+    for node in nodes[100:150]:
+        heap.decrease_key(node, node.key - 500)  # still in the heap: allowed
+    for node in extracted[::7]:
+        with pytest.raises(ValueError):
+            heap.decrease_key(node, -10_000)
+    assert len(heap) == 150
+
+
 def test_handles_stay_valid_after_many_decreases(heap_cls):
     # Binomial swaps entries while bubbling up; handles must still point at their own item.
     heap = heap_cls()

@@ -62,7 +62,8 @@ class MergeableHeap(ABC):
         """Lower the key of a node already in this heap.
 
         Input: a handle returned by insert() on this heap, and new_key <= node.key.
-        Output: None. Raises ValueError if new_key is larger than the current key.
+        Output: None. Raises ValueError if new_key is larger than the current key,
+        or if the node has already been removed by extract_min.
         """
 
     @abstractmethod
@@ -89,6 +90,15 @@ class MergeableHeap(ABC):
         """
         if new_key > node.key:
             raise ValueError(f"new key {new_key!r} is greater than current key {node.key!r}")
+
+    @staticmethod
+    def _not_in_heap(node: HeapNode) -> ValueError:
+        """Error for decrease_key on a node that was already extracted.
+
+        Input: the node. Output: the ValueError to raise (each heap detects the
+        case with its own O(1) test, without storing anything extra per node).
+        """
+        return ValueError(f"{node!r} is not in the heap (was it already extracted?)")
 
     def _check_same_type(self, other: "MergeableHeap") -> None:
         """Shared validation for merge.
