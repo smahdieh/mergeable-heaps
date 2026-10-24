@@ -107,6 +107,29 @@ timed phase. Every row of the CSV is one phase:
 must be identical for all three heaps). `results/environment.json` records the
 Python version and machine.
 
+### Checking and plotting the results
+
+```bash
+# Completeness, Dijkstra agreement across heaps, and scaling vs theory
+python benchmarks/check_results.py
+
+# Figures + summary table into results/figures/ (add --copy-to ../report/figures for the report)
+python benchmarks/plot_results.py
+```
+
+| Output | Shows |
+|---|---|
+| `runtime.pdf` | (a) heapsort time vs n with an n log n guide, (b) extract_min cost / log n, (c) decrease_key cost, (d) extract_min after decrease_keys / log n |
+| `dijkstra_memory.pdf` | Dijkstra time vs graph size with a V log V guide, and memory per item |
+| `input_order.pdf` | extract_min cost for random, ascending and descending keys (n = 10^6) |
+| `summary_table.tex`, `summary.csv` | per-operation times at n = 10^7, Dijkstra at V = 10^6, memory |
+
+Lines are medians over the repeats; shaded bands span min to max. Plots are
+drawn with seaborn at the exact text width of the ACM small template and
+typeset by LaTeX in the template's fonts (Linux Libertine, 10 pt), so they
+match the report when included at `width=\linewidth`. Without a LaTeX
+installation, add `--no-latex` (same plots, matplotlib's default font).
+
 Main options of `run_benchmarks.py`:
 
 | Option | Default | Meaning |
