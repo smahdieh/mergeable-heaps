@@ -1,0 +1,14 @@
+[   24.1s] n=1,000 binomial done
+[   26.6s] n=3,000 binomial done
+[   38.1s] n=10,000 binomial done
+[   45.9s] n=30,000 binomial done
+[   60.8s] n=100,000 binomial done
+[   99.2s] n=300,000 binomial done
+[  227.2s] n=1,000,000 binomial done
+[  339.4s] n=3,000,000 binomial done
+[ 1040.2s] n=10,000,000 binomial done
+[ 1040.4s] dijkstra V=1,000 binomial done (decrease_keys=956)
+[ 1040.7s] dijkstra V=10,000 binomial done (decrease_keys=9,734)
+[ 1044.9s] dijkstra V=100,000 binomial done (decrease_keys=99,343)
+[ 1098.9s] dijkstra V=1,000,000 binomial done (decrease_keys=995,669)
+[ 1099.4s] finished; results in results/results_binomial.csv

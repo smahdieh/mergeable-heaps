@@ -1,0 +1,6 @@
+[  230.6s] n=10,000,000 pairing done
+[  230.8s] finished; results in results/results_10M_sequential.csv
+[  388.8s] n=10,000,000 binomial done
+[  389.0s] finished; results in results/results_10M_sequential.csv
+[  424.4s] n=10,000,000 fibonacci done
+[  424.6s] finished; results in results/results_10M_sequential.csv

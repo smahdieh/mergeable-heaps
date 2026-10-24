@@ -1,0 +1,14 @@
+[   24.4s] n=1,000 pairing done
+[   27.0s] n=3,000 pairing done
+[   38.2s] n=10,000 pairing done
+[   45.0s] n=30,000 pairing done
+[   55.0s] n=100,000 pairing done
+[   77.9s] n=300,000 pairing done
+[  151.8s] n=1,000,000 pairing done
+[  214.6s] n=3,000,000 pairing done
+[  699.6s] n=10,000,000 pairing done
+[  699.9s] dijkstra V=1,000 pairing done (decrease_keys=954)
+[  700.2s] dijkstra V=10,000 pairing done (decrease_keys=9,745)
+[  704.1s] dijkstra V=100,000 pairing done (decrease_keys=99,337)
+[  754.1s] dijkstra V=1,000,000 pairing done (decrease_keys=995,644)
+[  754.5s] finished; results in results/results_pairing.csv

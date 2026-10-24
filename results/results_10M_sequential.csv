@@ -1,0 +1,13 @@
+heap,workload,phase,n,repeat,ops,seconds,bytes_per_item,check
+pairing,heapsort,insert,10000000,0,10000000,5.311807,,
+pairing,heapsort,extract_min,10000000,0,10000000,90.044911,,
+pairing,decrease,decrease_key,10000000,0,9999999,11.244911,,
+pairing,decrease,extract_after_decrease,10000000,0,9999999,107.116360,,
+binomial,heapsort,insert,10000000,0,10000000,22.833885,,
+binomial,heapsort,extract_min,10000000,0,10000000,153.899338,,
+binomial,decrease,decrease_key,10000000,0,9999999,10.376412,,
+binomial,decrease,extract_after_decrease,10000000,0,9999999,154.240990,,
+fibonacci,heapsort,insert,10000000,0,10000000,5.834912,,
+fibonacci,heapsort,extract_min,10000000,0,10000000,192.984460,,
+fibonacci,decrease,decrease_key,10000000,0,9999999,10.248130,,
+fibonacci,decrease,extract_after_decrease,10000000,0,9999999,191.568473,,
