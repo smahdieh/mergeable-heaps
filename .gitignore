@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Generated data (too large for GitHub; upload elsewhere and link in README)
+data/*.txt
+data/*.csv
+data/*.bin
+!data/.gitkeep
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

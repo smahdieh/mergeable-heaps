@@ -1,0 +1,10 @@
+[project]
+name = "mergeable-heaps"
+version = "0.1.0"
+description = "COSC 520 A2: comparing Binomial, Fibonacci and Pairing heaps"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+# Lets tests do `from mergeable_heaps.fibonacci_heap import FibonacciHeap` without installing.
+pythonpath = ["src"]
+testpaths = ["tests"]
