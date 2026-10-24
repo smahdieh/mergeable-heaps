@@ -2,6 +2,8 @@
 
 COSC 520 – Assignment 2 (UBC Okanagan, Fall 2026)
 
+Repository: https://github.com/smahdieh/mergeable-heaps
+
 Compares three mergeable priority queues, all implemented from scratch
 (no `heapq` or other heap libraries):
 
