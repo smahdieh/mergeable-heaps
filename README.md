@@ -17,22 +17,49 @@ Compares three mergeable priority queues, all implemented from scratch
 
 ```
 mergeable-heaps/
-├── src/mergeable_heaps/   # heap implementations
-├── data/                  # dataset generator (generated data is not committed)
-├── benchmarks/            # timing scripts and plotting
-├── results/               # benchmark CSVs and figures
-└── tests/                 # unit tests (pytest)
+├── src/mergeable_heaps/
+│   ├── base.py              # MergeableHeap interface, HeapNode handle, EmptyHeapError
+│   ├── binomial_heap.py     # Binomial heap
+│   ├── fibonacci_heap.py    # Fibonacci heap
+│   ├── pairing_heap.py      # Pairing heap
+│   ├── dijkstra.py          # Dijkstra's algorithm on any of the heaps (application)
+│   └── dataset.py           # generate / save / load / verify the dataset
+├── data/
+│   ├── generate_dataset.py  # creates the dataset (the .bin files are not committed)
+│   └── manifest.json        # seed, parameters and SHA-256 of every data file
+├── benchmarks/
+│   ├── run_benchmarks.py    # times every workload, writes CSV rows
+│   ├── workloads.py         # the timed workloads
+│   ├── check_results.py     # validates the CSVs (completeness, agreement, scaling)
+│   └── plot_results.py      # figures and summary table for the report
+├── results/                 # benchmark CSVs, logs, figures (see results/README.md)
+├── tests/                   # 177 unit tests (pytest)
+└── demo.py                  # short demo of all three heaps (a few seconds)
 ```
 
 ## Setup
 
-Requires Python 3.10+.
+Requires Python 3.10+ (tested with CPython 3.10.16 on macOS). LaTeX is only
+needed to typeset the plots in the report's font (optional, see below).
 
 ```bash
+git clone https://github.com/smahdieh/mergeable-heaps.git
+cd mergeable-heaps
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
+
+## Quick start
+
+```bash
+pytest            # 177 unit tests, about 2 s
+python demo.py    # basic operations, Dijkstra and a timing comparison, about 3 s
+```
+
+The demo needs no dataset. It shows every operation on each heap, runs
+Dijkstra with all three heaps on the same graph (they must give the same
+distances), and heapsorts 100,000 random keys with each heap.
 
 ## Dataset
 
@@ -44,8 +71,8 @@ below): the same seed always gives byte-identical files, checked by `manifest.js
 ```bash
 # Generate the full dataset (about 20 s, 242 MB, seed 42)
 python data/generate_dataset.py
-#    or a small one for a quick try:
-python data/generate_dataset.py --n 100000 --graph-nodes 1000 10000
+#    or a small one for a quick try, in its own folder so data/manifest.json is kept:
+python data/generate_dataset.py --n 100000 --graph-nodes 1000 10000 --out-dir data_small
 
 # Check downloaded or generated files against the SHA-256 checksums in manifest.json
 python data/generate_dataset.py --verify
@@ -63,14 +90,23 @@ All files are raw little-endian 4-byte integers (Python `array`). Benchmarks
 for smaller n read a prefix of the same file, so every size comes from the
 same distribution. Sorted and reverse-sorted inputs are `range(n)` and need no file.
 
-## Running
+## Tests
 
 ```bash
-# Run the unit tests (177 tests, about 2 s)
 pytest
 ```
 
-### Benchmarks
+| Test file | What it checks |
+|---|---|
+| `test_heap_interface.py` | Behaviour every heap must share (run once per heap): empty-heap errors, heapsort vs `sorted()`, duplicates, `decrease_key`, `merge`, and 3,000-step random operation sequences checked against a brute-force reference |
+| `test_binomial_heap.py` | Distinct increasing root degrees, every B_k has 2^k nodes, one tree per 1-bit of n, entry handles stay valid after swaps |
+| `test_fibonacci_heap.py` | Lazy insert, distinct root degrees after consolidate, max degree <= log_phi(n), cut and cascading-cut marking |
+| `test_pairing_heap.py` | Heap order and `prev` pointers, two-pass pairing, cutting leftmost and middle children, no recursion-limit crash on 200,000 siblings |
+| `test_dijkstra.py` | CSR graph building, a hand-checked graph, and Dijkstra with each heap equal to Bellman-Ford on random graphs |
+| `test_dataset.py` | Generator is reproducible from its seed, smaller runs are prefixes of larger ones, value ranges, graphs are strongly connected, save/load round trip, checksum catches corrupted or missing files |
+
+## Benchmarks
+
 
 ```bash
 # Quick check (about 30 s)
@@ -107,7 +143,7 @@ timed phase. Every row of the CSV is one phase:
 must be identical for all three heaps). `results/environment.json` records the
 Python version and machine.
 
-### Checking and plotting the results
+## Checking and plotting the results
 
 ```bash
 # Completeness, Dijkstra agreement across heaps, and scaling vs theory
@@ -141,13 +177,20 @@ Main options of `run_benchmarks.py`:
 | `--repeats` / `--large-repeats` | 3 / 1 | repeats for n <= 10^6 / n > 10^6 |
 | `--out` | `results/results.csv` | output CSV (rows are appended) |
 
-| Test file | What it checks |
-|---|---|
-| `test_heap_interface.py` | Behaviour every heap must share (run once per heap): empty-heap errors, heapsort vs `sorted()`, duplicates, `decrease_key`, `merge`, and 3,000-step random operation sequences checked against a brute-force reference |
-| `test_binomial_heap.py` | Distinct increasing root degrees, every B_k has 2^k nodes, one tree per 1-bit of n, entry handles stay valid after swaps |
-| `test_fibonacci_heap.py` | Lazy insert, distinct root degrees after consolidate, max degree <= log_phi(n), cut and cascading-cut marking |
-| `test_pairing_heap.py` | Heap order and `prev` pointers, two-pass pairing, cutting leftmost and middle children, no recursion-limit crash on 200,000 siblings |
-| `test_dijkstra.py` | CSR graph building, a hand-checked graph, and Dijkstra with each heap equal to Bellman-Ford on random graphs |
-| `test_dataset.py` | Generator is reproducible from its seed, smaller runs are prefixes of larger ones, value ranges, graphs are strongly connected, save/load round trip, checksum catches corrupted or missing files |
+## Results summary
 
-More instructions (dataset, demo, benchmarks) will be added as the project grows.
+At n = 10^7 (single-process run; see `results/figures/summary.csv`):
+
+| Measure | Binomial | Fibonacci | Pairing |
+|---|---|---|---|
+| insert (ns/op) | 2,283 | 583 | **531** |
+| extract_min (ns/op) | 15,390 | 19,298 | **9,004** |
+| decrease_key (ns/op) | 1,038 | **1,025** | 1,124 |
+| heapsort total (s) | 176.7 | 198.8 | **95.4** |
+| Dijkstra, V = 10^6, E = 10^7 (s) | 15.9 | 20.1 | **14.6** |
+| memory (bytes/item, n = 10^6) | 128 | 96 | **72** |
+
+All growth rates match the theory (n log n heapsort, O(log n) extract_min,
+O(1) insert for Fibonacci and pairing, V log V Dijkstra). The pairing heap is
+the fastest in practice even though the Fibonacci heap has the best amortized
+bounds; the report explains why.

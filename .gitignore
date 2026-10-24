@@ -17,3 +17,4 @@ data/*.zip
 .DS_Store
 .vscode/
 .idea/
+data_small/
